@@ -19,6 +19,7 @@
 import daemon
 import rich_click as click
 from daemon.pidfile import TimeoutPIDLockFile
+from rich.console import Console
 
 from airflow import settings
 from airflow.cli import airflow_cmd, click_daemon, click_log_file, click_pid, click_stderr, click_stdout
@@ -37,7 +38,8 @@ from airflow.utils.cli import setup_locations
 @click.option("-k", "--keytab", metavar="KEYTAB", help="keytab", default=conf.get("kerberos", "keytab"))
 def kerberos(principal, stdout, stderr, pid, daemon_, log_file, keytab):
     """Start a kerberos ticket renewer"""
-    print(settings.HEADER)
+    console = Console()
+    console.print(settings.HEADER)
 
     if daemon_:
         pid, stdout, stderr, _ = setup_locations("kerberos", pid, stdout, stderr, log_file)
