@@ -35,11 +35,11 @@ from airflow.utils.cli import setup_locations
 @click_daemon
 @click_log_file
 @click.option("-k", "--keytab", metavar="KEYTAB", help="keytab", default=conf.get("kerberos", "keytab"))
-def kerberos(principal, stdout, stderr, pid, daemon, log_file, keytab):
+def kerberos(principal, stdout, stderr, pid, daemon_, log_file, keytab):
     """Start a kerberos ticket renewer"""
     print(settings.HEADER)
 
-    if daemon:
+    if daemon_:
         pid, stdout, stderr, _ = setup_locations("kerberos", pid, stdout, stderr, log_file)
         with open(stdout, "w+") as stdout_handle, open(stderr, "w+") as stderr_handle:
             ctx = daemon.DaemonContext(
