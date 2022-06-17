@@ -311,6 +311,9 @@ def suppress_logs_and_warning(f: T) -> T:
     """
     Decorator to suppress logging and warning messages
     in cli functions.
+
+    This function can be safely deleted after all Airflow CLI
+    commands are rewritten with Click (#22708)
     """
 
     @functools.wraps(f)
