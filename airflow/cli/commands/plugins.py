@@ -28,7 +28,7 @@ from airflow.utils.cli import suppress_logs_and_warning_click_compatible
 @click_verbose
 @suppress_logs_and_warning_click_compatible
 def dump_plugins(output, verbose):
-    """Dump plugins information"""
+    """Dump information about loaded plugins"""
     plugins_info: List[Dict[str, str]] = get_plugin_info()
     console = AirflowConsole()
     if not plugins_manager.plugins:
