@@ -23,6 +23,7 @@ from airflow.cli.commands import cheat_sheet  # noqa: F401
 from airflow.cli.commands import db  # noqa: F401
 from airflow.cli.commands import info  # noqa: F401
 from airflow.cli.commands import jobs  # noqa: F401
+from airflow.cli.commands import pool  # noqa: F401
 from airflow.cli.commands import scheduler  # noqa: F401
 from airflow.cli.commands import standalone  # noqa: F401
 from airflow.cli.commands import sync_perm  # noqa: F401
