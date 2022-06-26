@@ -17,7 +17,7 @@
 # under the License.
 """Pools sub-commands"""
 import json
-import os
+import warnings
 from json import JSONDecodeError
 
 import rich_click as click
@@ -26,7 +26,7 @@ from airflow.api.client import get_current_api_client
 from airflow.cli import airflow_cmd, click_output, click_verbose
 from airflow.cli.simple_table import AirflowConsole
 from airflow.exceptions import PoolNotFound
-from airflow.utils.cli import suppress_logs_and_warning_click_compatible
+from airflow.utils import cli as cli_utils
 
 
 @airflow_cmd.group("pools")
@@ -49,7 +49,7 @@ def _show_pools(pools, output):
 @pools.command("list")
 @click_output
 @click_verbose
-@suppress_logs_and_warning_click_compatible
+@cli_utils.suppress_logs_and_warning_click_compatible
 def pool_list(output, verbose):
     """Displays info of all the pools"""
     api_client = get_current_api_client()
@@ -61,7 +61,7 @@ def pool_list(output, verbose):
 @click.argument("name")
 @click_output
 @click_verbose
-@suppress_logs_and_warning_click_compatible
+@cli_utils.suppress_logs_and_warning_click_compatible
 def pool_get(name, output, verbose):
     """Displays pool info by a given name"""
     api_client = get_current_api_client()
@@ -76,33 +76,40 @@ def pool_get(name, output, verbose):
 @click.argument("name")
 @click.argument("slots")
 @click.argument("description")
+@click_output
 @click_verbose
-@suppress_logs_and_warning_click_compatible
-def pool_set(name, slots, description, verbose):
+@cli_utils.action_cli(check_cli_args=False)
+@cli_utils.suppress_logs_and_warning_click_compatible
+def pool_set(name, slots, description, output, verbose):
     """Creates new pool with a given name and slots"""
+    warnings.warn("Option `--output` is unused and will be removed in a future version.", DeprecationWarning)
     api_client = get_current_api_client()
     api_client.create_pool(name=name, slots=slots, description=description)
-    print(f"Pool {name} created")
+    AirflowConsole().print(f"Pool {name} created")
 
 
 @pools.command("delete")
 @click.argument("name")
+@click_output
 @click_verbose
-@suppress_logs_and_warning_click_compatible
-def pool_delete(name, verbose):
+@cli_utils.action_cli(check_cli_args=False)
+@cli_utils.suppress_logs_and_warning_click_compatible
+def pool_delete(name, output, verbose):
     """Deletes pool by a given name"""
+    warnings.warn("Option `--output` is unused and will be removed in a future version.", DeprecationWarning)
     api_client = get_current_api_client()
     try:
         api_client.delete_pool(name=name)
-        print(f"Pool {name} deleted")
+        AirflowConsole().print(f"Pool {name} deleted")
     except PoolNotFound:
         raise SystemExit(f"Pool {name} does not exist")
 
 
 @pools.command("import")
-@click.argument("filepath")
+@click.argument("filepath", type=click.Path(exists=True, dir_okay=False))
 @click_verbose
-@suppress_logs_and_warning_click_compatible
+@cli_utils.action_cli(check_cli_args=False)
+@cli_utils.suppress_logs_and_warning_click_compatible
 def pool_import(filepath, verbose):
     """Imports pools from a JSON file.
 
@@ -114,20 +121,18 @@ def pool_import(filepath, verbose):
         }
 
     """
-    if not os.path.exists(filepath):
-        raise SystemExit(f"Missing pools file {filepath}")
     pools, failed = pool_import_helper(filepath)
     if len(failed) > 0:
         raise SystemExit(f"Failed to update pool(s): {', '.join(failed)}")
-    print(f"Uploaded {len(pools)} pool(s)")
+    AirflowConsole().print(f"Uploaded {len(pools)} pool(s)")
 
 
 @pools.command("export")
-@click.argument("filepath")
+@click.argument("filepath", type=click.Path())
 def pool_export(filepath):
     """Exports all of the pools to the file"""
     pools = pool_export_helper(filepath)
-    print(f"Exported {len(pools)} pools to {filepath}")
+    AirflowConsole().print(f"Exported {len(pools)} pools to {filepath}")
 
 
 def pool_import_helper(filepath):

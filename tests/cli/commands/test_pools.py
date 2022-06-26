@@ -20,11 +20,10 @@ import json
 import os
 import unittest
 
-import pytest
 from click.testing import CliRunner
 
 from airflow import models, settings
-from airflow.cli.commands import pool
+from airflow.cli.commands import pools
 from airflow.models import Pool
 from airflow.settings import Session
 from airflow.utils.db import add_default_pool_if_not_exists
@@ -55,37 +54,37 @@ class TestCliPools(unittest.TestCase):
         session.close()
 
     def test_pool_list(self):
-        self.runner.invoke(pool.pools, ["set", "foo", "1", "test"])
-        result = self.runner.invoke(pool.pools, ["list"])
+        self.runner.invoke(pools.pools, ["set", "foo", "1", "test"])
+        result = self.runner.invoke(pools.pools, ["list"])
         assert "foo" in result.output
 
     def test_pool_list_with_args(self):
-        result = self.runner.invoke(pool.pools, ["list", "--output", "json"])
+        result = self.runner.invoke(pools.pools, ["list", "--output", "json"])
         assert result.exit_code == 0
 
     def test_pool_create(self):
-        self.runner.invoke(pool.pools, ["set", "foo", "1", "test"])
+        self.runner.invoke(pools.pools, ["set", "foo", "1", "test"])
         assert self.session.query(Pool).count() == 2
 
     def test_pool_get(self):
-        self.runner.invoke(pool.pools, ["set", "foo", "1", "test"])
-        result = self.runner.invoke(pool.pools, ["get", "foo"])
+        self.runner.invoke(pools.pools, ["set", "foo", "1", "test"])
+        result = self.runner.invoke(pools.pools, ["get", "foo"])
         assert result.exit_code == 0
 
     def test_pool_delete(self):
-        self.runner.invoke(pool.pools, ["set", "foo", "1", "test"])
-        self.runner.invoke(pool.pools, ["delete", "foo"])
+        self.runner.invoke(pools.pools, ["set", "foo", "1", "test"])
+        self.runner.invoke(pools.pools, ["delete", "foo"])
         assert self.session.query(Pool).count() == 1
 
     def test_pool_import_nonexistent(self):
-        result = self.runner.invoke(pool.pools, ["import", "nonexistent.json"])
+        result = self.runner.invoke(pools.pools, ["import", "nonexistent.json"])
         assert isinstance(result.exception, SystemExit)
 
     def test_pool_import_invalid_json(self):
         with open('pools_import_invalid.json', mode='w') as file:
             file.write("not valid json")
 
-        result = self.runner.invoke(pool.pools, ["import", "pools_import_invalid.json"])
+        result = self.runner.invoke(pools.pools, ["import", "pools_import_invalid.json"])
         assert isinstance(result.exception, SystemExit)
 
     def test_pool_import_invalid_pools(self):
@@ -93,7 +92,7 @@ class TestCliPools(unittest.TestCase):
         with open('pools_import_invalid.json', mode='w') as file:
             json.dump(pool_config_input, file)
 
-        result = self.runner.invoke(pool.pools, ["import", "pools_import_invalid.json"])
+        result = self.runner.invoke(pools.pools, ["import", "pools_import_invalid.json"])
         assert isinstance(result.exception, SystemExit)
 
     def test_pool_import_export(self):
@@ -107,10 +106,10 @@ class TestCliPools(unittest.TestCase):
             json.dump(pool_config_input, file)
 
         # Import json
-        self.runner.invoke(pool.pools, ["import", "pools_import.json"])
+        self.runner.invoke(pools.pools, ["import", "pools_import.json"])
 
         # Export json
-        self.runner.invoke(pool.pools, ["export", "pools_export.json"])
+        self.runner.invoke(pools.pools, ["export", "pools_export.json"])
 
         with open('pools_export.json') as file:
             pool_config_output = json.load(file)
